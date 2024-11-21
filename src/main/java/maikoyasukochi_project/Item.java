@@ -8,7 +8,7 @@ public class Item {
 
 	public static void main(String[] args) {
 
-		 Scanner scanner = new Scanner(System.in);
+		Scanner scanner = new Scanner(System.in);
 		Item item = new Item();
 		
 		System.out.print("Enter item name: ");
