@@ -24,32 +24,64 @@ public class Main {
 			switch (choice) {
 			case 1:
 				// Add product
-				System.out.print("Enter product ID: ");
-				int id = scanner.nextInt();
-				scanner.nextLine();
-				System.out.print("Enter product name: ");
-				String name = scanner.nextLine();
-				System.out.print("Enter product price: ");
-				int price = scanner.nextInt();
-				System.out.print("Enter product stock: ");
-				int stock = scanner.nextInt();
-				scanner.nextLine();
+				try {
+					System.out.print("Enter product ID: ");
+					int id = scanner.nextInt();
+					scanner.nextLine();
 
-				System.out.print("Enter discount rate (percentage) or type 'No' if no discount: ");
-				String discountInput = scanner.nextLine();
-
-				if (discountInput.equalsIgnoreCase("No")) {
-					Product product = new Product(id, name, price, stock);
-					manager.addProduct(product);
-				} else {
+					System.out.print("Enter product name: ");
+					String name = scanner.nextLine();
 					try {
-						double discountRate = Double.parseDouble(discountInput);
-						DiscountedProduct discountedProduct = new DiscountedProduct(id, name, price, stock,
-								discountRate);
-						manager.addProduct(discountedProduct);
-					} catch (NumberFormatException e) {
-						System.out.println("Invalid discount rate. Product not added.");
+						if (name == null || name.trim().isEmpty()) {
+							throw new IllegalArgumentException("Product name cannot be empty.");
+						}
+					} catch (IllegalArgumentException e) {
+						System.out.println("Error: " + e.getMessage());
+						continue; 
 					}
+
+					System.out.print("Enter product price: ");
+					int price = scanner.nextInt();
+					scanner.nextLine(); 
+					try {
+						if (price <= 0) {
+							throw new IllegalArgumentException("Product price must be a positive value.");
+						}
+					} catch (IllegalArgumentException e) {
+						System.out.println("Error: " + e.getMessage());
+						continue; 
+					}
+
+					System.out.print("Enter product stock: ");
+					int stock = scanner.nextInt();
+					scanner.nextLine(); 
+					try {
+						if (stock < 0) {
+							throw new IllegalArgumentException("Product stock cannot be negative.");
+						}
+					} catch (IllegalArgumentException e) {
+						System.out.println("Error: " + e.getMessage());
+						continue; 
+					}
+
+					System.out.print("Enter discount rate (percentage) or type 'No' if no discount: ");
+					String discountInput = scanner.nextLine();
+
+					if ("No".equalsIgnoreCase(discountInput)) {
+						Product product = new Product(id, name, price, stock);
+						manager.addProduct(product);
+					} else {
+						try {
+							double discountRate = Double.parseDouble(discountInput);
+							DiscountedProduct discountedProduct = new DiscountedProduct(id, name, price, stock,
+									discountRate);
+							manager.addProduct(discountedProduct);
+						} catch (NumberFormatException e) {
+							System.out.println("Invalid discount rate. Product not added.");
+						}
+					}
+				} catch (IllegalArgumentException e) {
+					System.out.println("Error adding product: " + e.getMessage());
 				}
 				break;
 
