@@ -67,7 +67,7 @@ public class Main {
 					System.out.print("Enter discount rate (percentage) or type 'No' if no discount: ");
 					String discountInput = scanner.nextLine();
 
-					if ("No".equalsIgnoreCase(discountInput)) {
+					if ("No".equalsIgnoreCase(discountInput) || discountInput.trim().isEmpty()) {
 						Product product = new Product(id, name, price, stock);
 						manager.addProduct(product);
 					} else {
