@@ -30,8 +30,14 @@ public class DiscountedProduct extends Product {
 	@Override
 	public String toString() {
 		DecimalFormat df = new DecimalFormat("0");
-		return super.toString() + "\n" +
-				"discount rate: " + discountRate + "%\n" +
-				"discounted price: " + df.format(calculateDiscountedPrice()) + "yen";
+		String result = super.toString();
+		if (this.discountRate == 0.0) {
+			result += "discount rate: 0%\n";
+		} else {
+			result += "discount rate: " + discountRate + "%\n";
+			result += "discounted price: " + df.format(calculateDiscountedPrice()) + "yen\n";
+		}
+		return result;
 	}
+
 }

@@ -37,31 +37,31 @@ public class Main {
 						}
 					} catch (IllegalArgumentException e) {
 						System.out.println("Error: " + e.getMessage());
-						continue; 
+						continue;
 					}
 
 					System.out.print("Enter product price: ");
 					int price = scanner.nextInt();
-					scanner.nextLine(); 
+					scanner.nextLine();
 					try {
 						if (price <= 0) {
 							throw new IllegalArgumentException("Product price must be a positive value.");
 						}
 					} catch (IllegalArgumentException e) {
 						System.out.println("Error: " + e.getMessage());
-						continue; 
+						continue;
 					}
 
 					System.out.print("Enter product stock: ");
 					int stock = scanner.nextInt();
-					scanner.nextLine(); 
+					scanner.nextLine();
 					try {
 						if (stock < 0) {
 							throw new IllegalArgumentException("Product stock cannot be negative.");
 						}
 					} catch (IllegalArgumentException e) {
 						System.out.println("Error: " + e.getMessage());
-						continue; 
+						continue;
 					}
 
 					System.out.print("Enter discount rate (percentage) or type 'No' if no discount: ");

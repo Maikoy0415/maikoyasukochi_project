@@ -48,10 +48,13 @@ public class Product {
 	}
 
 	public String toString() {
-		return "Product\n" +
+		String result = 
 				"id: " + id + "\n" +
 				"name: " + name + "\n" +
-				"price: " + price + "yen" + "\n" +
-				"stock: " + stock;
+				"price: " + price + "yen\n" +
+				"stock: " + stock + "\n";
+
+		return result;
 	}
+
 }
