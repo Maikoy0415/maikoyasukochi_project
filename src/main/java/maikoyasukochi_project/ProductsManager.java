@@ -5,31 +5,50 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ProductsManager implements Searchable {
-	private static final String DB_URL = "jdbc:mysql://localhost:3306/product_management";
-	private static final String DB_USER = "root";
-	private static final String DB_PASSWORD = "Maiko5415!";
+	private Categories categories = new Categories();
 
 	private Connection connect() throws SQLException {
-		return DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+		return DriverManager.getConnection("jdbc:mysql://localhost:3306/product_management", "root", "Maiko5415!");
+	}
+
+	public Product getProductById(int id) {
+		String sql = "SELECT * FROM products WHERE id = ?";
+		try (Connection conn = connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+			stmt.setInt(1, id);
+			ResultSet rs = stmt.executeQuery();
+			if (rs.next()) {
+				return mapToProduct(rs);
+			}
+		} catch (SQLException e) {
+			System.err.println("Error retrieving information : " + e.getMessage());
+		}
+		return null;
 	}
 
 	public void addProduct(Product product) {
-		String sql = "INSERT INTO products (id, name, price, stock, discount_rate) VALUES (?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO products (id, name, price, stock, discount_rate, category_id) VALUES (?, ?, ?, ?, ?, ?)";
 		try (Connection conn = connect(); PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setInt(1, product.getId());
 			stmt.setString(2, product.getName());
 			stmt.setInt(3, product.getPrice());
 			stmt.setInt(4, product.getStock());
+
 			if (product instanceof DiscountedProduct) {
 				stmt.setDouble(5, ((DiscountedProduct) product).getDiscountRate());
 			} else {
-				stmt.setNull(5, Types.DOUBLE);
+				stmt.setNull(5, java.sql.Types.DOUBLE);
 			}
+
+			int categoryId = categories.getCategoryIdByName(product.getCategory());
+			if (categoryId == -1) {
+				categoryId = categories.addCategory(product.getCategory());
+			}
+
+			stmt.setInt(6, categoryId);
 			stmt.executeUpdate();
 			System.out.println("Product added: " + product);
 		} catch (SQLException e) {
@@ -83,6 +102,46 @@ public class ProductsManager implements Searchable {
 		}
 	}
 
+	public void updateProduct(Product product) {
+		String sql = "UPDATE products SET name = ?, price = ?, stock = ?, discount_rate = ?, category_id = ? WHERE id = ?";
+		try (Connection conn = connect()) {
+			conn.setAutoCommit(false); 
+			try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+				stmt.setString(1, product.getName());
+				stmt.setInt(2, product.getPrice());
+				stmt.setInt(3, product.getStock());
+
+				if (product instanceof DiscountedProduct) {
+					stmt.setDouble(4, ((DiscountedProduct) product).getDiscountRate());
+				} else {
+					stmt.setNull(4, java.sql.Types.DOUBLE);
+				}
+
+				int categoryId = categories.getCategoryIdByName(product.getCategory());
+				if (categoryId == -1) {
+					categoryId = categories.addCategory(product.getCategory());
+				}
+				stmt.setInt(5, categoryId);
+
+				stmt.setInt(6, product.getId());
+
+				int rowsAffected = stmt.executeUpdate();
+				if (rowsAffected > 0) {
+					conn.commit(); 
+					System.out.println("Product updated successfully.");
+				} else {
+					conn.rollback(); 
+					System.out.println("No rows affected. Product may not exist or no changes were made.");
+				}
+			} catch (SQLException e) {
+				conn.rollback(); 
+				throw e;
+			}
+		} catch (SQLException e) {
+			System.err.println("Error updating product: " + e.getMessage());
+		}
+	}
+
 	@Override
 	public List<Product> search(String keyword) {
 		String sql = "SELECT * FROM products WHERE name LIKE ?";
@@ -104,11 +163,16 @@ public class ProductsManager implements Searchable {
 		String name = rs.getString("name");
 		int price = rs.getInt("price");
 		int stock = rs.getInt("stock");
+
 		double discountRate = rs.getDouble("discount_rate");
+		int categoryId = rs.getInt("category_id");
+
+		String category = categories.getCategoryNameById(categoryId);
+
 		if (rs.wasNull()) {
-			return new Product(id, name, price, stock);
+			return new Product(id, name, price, stock, category);
 		} else {
-			return new DiscountedProduct(id, name, price, stock, discountRate);
+			return new DiscountedProduct(id, name, price, stock, discountRate, category);
 		}
 	}
 }
