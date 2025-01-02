@@ -1,5 +1,6 @@
 package maikoyasukochi_project;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -18,7 +19,8 @@ public class Main {
 			System.out.println("5. Display All Products");
 			System.out.println("6. Search Products by Keyword");
 			System.out.println("7. Update Product");
-			System.out.println("8. Exit");
+			System.out.println("8. Batch Update Stocks");
+			System.out.println("9. Exit");
 			System.out.print("Enter your choice: ");
 
 			int choice = scanner.nextInt();
@@ -206,7 +208,6 @@ public class Main {
 						productToUpdate.setCategory(newCategoryInput);
 					}
 
-					// データベースに変更を反映
 					manager.updateProduct(productToUpdate);
 
 					System.out.println("Updated product details: " + productToUpdate);
@@ -214,8 +215,36 @@ public class Main {
 					System.out.println("Product with ID " + updateId + " not found.");
 				}
 				break;
+				
+			case 8: // 新しいメニューオプション
+			    try {
+			        System.out.print("Enter product IDs separated by commas: ");
+			        String idsInput = scanner.nextLine();
+			        List<Integer> productIds = new ArrayList<>();
+			        for (String id : idsInput.split(",")) {
+			            productIds.add(Integer.parseInt(id.trim()));
+			        }
 
-			case 8:
+			        System.out.print("Enter corresponding stock values separated by commas: ");
+			        String stocksInput = scanner.nextLine();
+			        List<Integer> newStocks = new ArrayList<>();
+			        for (String stock : stocksInput.split(",")) {
+			            newStocks.add(Integer.parseInt(stock.trim()));
+			        }
+
+			        if (productIds.size() != newStocks.size()) {
+			            throw new IllegalArgumentException("The number of product IDs must match the number of stock values.");
+			        }
+
+			        manager.updateStockBatch(productIds, newStocks);
+			    } catch (NumberFormatException e) {
+			        System.out.println("Invalid input format. Please enter numeric values.");
+			    } catch (IllegalArgumentException e) {
+			        System.out.println("Error: " + e.getMessage());
+			    }
+			    break;
+
+			case 9:
 				System.out.println("Bye");
 				scanner.close();
 				return;

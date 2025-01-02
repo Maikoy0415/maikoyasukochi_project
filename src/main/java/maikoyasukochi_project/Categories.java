@@ -83,7 +83,6 @@ public class Categories {
 			insertStmt.setString(1, category);
 			insertStmt.executeUpdate();
 
-			// 挿入したカテゴリIDを返す
 			ResultSet generatedKeys = insertStmt.getGeneratedKeys();
 			if (generatedKeys.next()) {
 				return generatedKeys.getInt(1);

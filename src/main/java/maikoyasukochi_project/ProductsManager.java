@@ -105,7 +105,7 @@ public class ProductsManager implements Searchable {
 	public void updateProduct(Product product) {
 		String sql = "UPDATE products SET name = ?, price = ?, stock = ?, discount_rate = ?, category_id = ? WHERE id = ?";
 		try (Connection conn = connect()) {
-			conn.setAutoCommit(false); 
+			conn.setAutoCommit(false);
 			try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 				stmt.setString(1, product.getName());
 				stmt.setInt(2, product.getPrice());
@@ -127,18 +127,56 @@ public class ProductsManager implements Searchable {
 
 				int rowsAffected = stmt.executeUpdate();
 				if (rowsAffected > 0) {
-					conn.commit(); 
+					conn.commit();
 					System.out.println("Product updated successfully.");
 				} else {
-					conn.rollback(); 
+					conn.rollback();
 					System.out.println("No rows affected. Product may not exist or no changes were made.");
 				}
 			} catch (SQLException e) {
-				conn.rollback(); 
+				conn.rollback();
 				throw e;
 			}
 		} catch (SQLException e) {
 			System.err.println("Error updating product: " + e.getMessage());
+		}
+	}
+
+	public void updateStockBatch(List<Integer> productIds, List<Integer> newStocks) {
+		String sql = "UPDATE products SET stock = ? WHERE id = ?";
+		try (Connection conn = connect()) {
+			conn.setAutoCommit(false);
+
+			try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+				for (int i = 0; i < productIds.size(); i++) {
+					stmt.setInt(1, newStocks.get(i));
+					stmt.setInt(2, productIds.get(i));
+					stmt.addBatch();
+				}
+
+				int[] updateCounts = stmt.executeBatch();
+
+				boolean allUpdated = true;
+				for (int count : updateCounts) {
+					if (count == 0) {
+						allUpdated = false;
+						break;
+					}
+				}
+
+				if (allUpdated) {
+					conn.commit();
+					System.out.println("All stocks updated successfully.");
+				} else {
+					conn.rollback();
+					System.out.println("Batch update failed. All changes have been rolled back.");
+				}
+			} catch (SQLException e) {
+				conn.rollback();
+				throw e;
+			}
+		} catch (SQLException e) {
+			System.err.println("Error during batch stock update: " + e.getMessage());
 		}
 	}
 
