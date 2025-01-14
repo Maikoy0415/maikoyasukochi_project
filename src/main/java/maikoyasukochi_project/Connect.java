@@ -5,30 +5,23 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Connect {
+	private static final String DATABASE_NAME = "product_management";
+	private static final String PROPERTIES = "?characterEncoding=UTF-8&serverTimezone=Asia/Tokyo";
+	private static final String URL = "jdbc:mysql://localhost:3306/" + DATABASE_NAME + PROPERTIES;
+	private static final String USER = "root";
+	private static final String PASS = "Maiko5415!";
 
-    public static void main(String[] args) {
-        // DB接続用定数
-        String DATABASE_NAME = "product_management";
-        String PROPATIES = "?characterEncoding=UTF-8&serverTimezone=Asia/Tokyo";
-        String URL = "jdbc:mysql://localhost:3306/" + DATABASE_NAME + PROPATIES;
-        // DB接続用・ユーザ定数
-        String USER = "root";
-        String PASS = "Maiko5415!";
+	// 静的な接続メソッド
+	public static Connection getConnection() throws SQLException {
+		return DriverManager.getConnection(URL, USER, PASS);
+	}
 
-        try {
-            // MySQL に接続する
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            // データベースに接続
-            Connection conn = DriverManager.getConnection(URL, USER, PASS);
-
-            // データベースに対する処理
-            System.out.println("Connection successful");
-
-            // 接続を閉じる
-            conn.close();
-
-        } catch (SQLException | ClassNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
+	// 接続確認用のテストメイン
+	public static void main(String[] args) {
+		try (Connection conn = Connect.getConnection()) {
+			System.out.println("Connection successful");
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 }
